@@ -22,28 +22,28 @@ def tab1():
     c = conn.cursor()
 
     c.execute("SELECT * FROM preferences ") # Get current preferences
-    row = c.fetchall()[0]
+    prefs = c.fetchall()[0]
 
-    heading         = row[1]
-    max_requests    = row[2]
-    scan_frequency  = row[3]
-    interval        = row[4]
+    heading         = prefs[1]
+    max_requests    = prefs[2]
+    scan_frequency  = prefs[3]
+    interval        = prefs[4]
 
-    factor0         = row[5]
-    factor1         = row[6]
-    factor2         = row[7]
-    factor3         = row[8]
-    factor4         = row[9]
-    factor5         = row[10]
-    factor6         = row[11]
+    factor0         = prefs[5]
+    factor1         = prefs[6]
+    factor2         = prefs[7]
+    factor3         = prefs[8]
+    factor4         = prefs[9]
+    factor5         = prefs[10]
+    factor6         = prefs[11]
     
-    name0           = row[12]
-    name1           = row[13]
-    name2           = row[14]
-    name3           = row[15]
-    name4           = row[16]
-    name5           = row[17]
-    name6           = row[18]
+    name0           = prefs[12]
+    name1           = prefs[13]
+    name2           = prefs[14]
+    name3           = prefs[15]
+    name4           = prefs[16]
+    name5           = prefs[17]
+    name6           = prefs[18]
 
     s1 = 0
     s2 = 0
@@ -110,8 +110,8 @@ def tab1():
 
                 children=[ 
                     html.Button('Record', id='start', n_clicks=0, style={'backgroundColor':'lightgreen', 'width':'100px'}),
-                    html.Div(id='output',style={'color':'white', 'height':'15px'}), 
-                    html.Div(id='output2',style={'color':'white', 'height':'15px'}), 
+                    html.Div(id='output_status',style={'color':'white', 'height':'15px'}), 
+                    html.Div(id='output_lastid',style={'color':'white', 'height':'15px'}), 
                         ]
                 ),
 
@@ -402,7 +402,7 @@ def tab1():
 #+++ This callback only sets the recording status ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 @app.callback(
-    Output('output', 'children'),
+    Output('output_status', 'children'),
     Input('start', 'n_clicks'))
 
 def record_status_text(n1):
@@ -412,18 +412,17 @@ def record_status_text(n1):
 
     with conn: 
         c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
+        run = c.fetchone()
+        lastid      = run[0]
+        time_end    = run[2]
 
-    row = c.fetchone()
-    lastid = row[0]
-    time_end = row[2]
-
-    status = 'RECORDING' if ((n1 != 0) and (len(row) == 0 or time_end is not None)) else 'NOT RECORDING'
+    status = 'RECORDING' if ((n1 != 0) and (len(run) == 0 or time_end is not None)) else 'NOT RECORDING'
     return str(status)
 
 # ------------Starts and Stops recording--------------------------------------    
 
 @app.callback(
-    Output('output2', 'children'),
+    Output('output_lastid', 'children'),
     Input('start', 'n_clicks'),
     [State('s1', 'value'), State('s2','value')])
 
@@ -436,61 +435,35 @@ def start_stop_record(n,s1,s2):
 
     with conn: 
         c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
+        run = c.fetchone()
+        lastid = run[0]
+        time_end = run[2]
 
-    row = c.fetchone()
-
-    lastid = row[0]
-    time_end = row[2]
-
-    status = 'NOT RECORDING' if (len(row) == 0 or time_end is not None) else 'RECORDING'
+    status = 'NOT RECORDING' if (len(run) == 0 or time_end is not None) else 'RECORDING'
 
     if n > 0 and status == 'NOT RECORDING': #There is no active recording and so starting a new one
         
         with conn:
             c.execute("SELECT * FROM preferences ")
+            prefs = c.fetchall()[0]
 
-            row = c.fetchall()[0]
-
-            heading         = row[1]
-            max_requests    = row[2]
-            scan_frequency  = row[3]
-            interval        = row[4]
-
-            factor0         = row[5]
-            factor1         = row[6]
-            factor2         = row[7]
-            factor3         = row[8]
-            factor4         = row[9]
-            factor5         = row[10]
-            factor6         = row[11]
+            heading         = prefs[1]
+            max_requests    = prefs[2]
+            scan_frequency  = prefs[3]
+            interval        = prefs[4]
+            factor0         = prefs[5]
+            factor1         = prefs[6]
+            factor2         = prefs[7]
+            factor3         = prefs[8]
+            factor4         = prefs[9]
+            factor5         = prefs[10]
+            factor6         = prefs[11]
             
-        #     name0           = row[12]
-        #     name1           = row[13]
-        #     name2           = row[14]
-        #     name3           = row[15]
-        #     name4           = row[16]
-        #     name5           = row[17]
-        #     name6           = row[18]
 
         now = int(datetime.now().strftime('%s%f'))
 
         with conn:  # Inserts all fields except time_end
             c.execute(f"INSERT INTO run_number (time_start) VALUES ({now}) ")
-                
-
-            
-        # with conn:  # Inserts all fields except time_end
-        #     c.execute("""
-        #         INSERT INTO run_number 
-        #         (time_start, heading, max_requests, scan_frequency, interval, factor0, factor1, factor2, factor3, factor4, factor5, factor6, name0, name1, name2, name3, name4, name5, name6) 
-        #         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-        #         (int(datetime.now().strftime('%s%f')),heading,max_requests,scan_frequency,interval,factor0,factor1,factor2,factor3,factor4, factor5, factor6, name0, name1, name2, name3, name4, name5, name6))
-
-        # with conn: 
-        #     c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
-        #     row = c.fetchone()
-        #     lastid = row[0]
-
 
 
 #---- ENDLESS LOOP ------------------------------------------------------------------------
@@ -499,9 +472,9 @@ def start_stop_record(n,s1,s2):
 
             with conn: 
                 c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
-                row = c.fetchone()
-                lastid = row[0]
-                time_end = row[2]
+                run = c.fetchone()
+                lastid      = run[0]
+                time_end    = run[2]
 
             closed = True if time_end is not None else False
 
@@ -510,9 +483,9 @@ def start_stop_record(n,s1,s2):
 
             with conn:
                 c.execute("SELECT * FROM sliderpos WHERE id = 1")
-                row = c.fetchall()[0]   
-                s1 = row[1]
-                s2 = row[2] 
+                sliderpos = c.fetchall()[0]   
+                s1 = sliderpos[1]
+                s2 = sliderpos[2] 
 
             avgs = lj.labjack(scan_frequency, max_requests, s1, s2)
 
@@ -533,11 +506,16 @@ def start_stop_record(n,s1,s2):
     else:   #   There is an open detected and so closing the opened run
         
         with conn: 
-            c.execute(f"UPDATE run_number SET time_end = {str(int(datetime.now().strftime('%s%f')))} WHERE run_id = {str(row[0])} ")
+            c.execute(f"UPDATE run_number SET time_end = {str(int(datetime.now().strftime('%s%f')))} WHERE run_id = {str(run[0])} ")
         
-        print(f'Run_id : {str(row[0])} has been closed')        
+        with conn:
+            c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
+            run = c.fetchone()
+            lastid = run[0]
 
-    return f"(Last recording {lastid})"
+        print(f"Run_id : '{lastid}' has been closed")        
+
+    return f"(Last recording '{lastid}')"
 
 #+++ END OF RECORD LOGIC - START INTERVAL PAGE REFRESH CALLBACK +++++++++++++++++++++++++++++++++++++++++++++
     
@@ -556,35 +534,35 @@ def start_stop_record(n,s1,s2):
 
 def refresh_page(n, s1, s2):
 
+    avgs = None
     conn = sql.connect("labjackdb.db")
     c = conn.cursor()
 
 
     with conn:
         c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
-        row = c.fetchall()[0]
-        lastid      = row[0]
-        time_start  = row[1]
-        time_end    = row[2]
+        run = c.fetchall()[0]
+        lastid      = run[0]
+        time_start  = run[1]
+        time_end    = run[2]
 
     with conn:
         c.execute("SELECT * FROM preferences")
-        row = c.fetchall()[0]
-
-        max_requests    = row[2]
-        scan_frequency  = row[3]
-
-        factor0 = row[5]
-        factor1 = row[6]
-        factor2 = row[7]
-        factor3 = row[8]
-        factor4 = row[9]
-        factor5 = row[10]
-        factor6 = row[11]
-
+        prefs = c.fetchone()
+        max_requests    = prefs[2]
+        scan_frequency  = prefs[3]
+        interval        = prefs[4]
+        factor0         = prefs[5]
+        factor1         = prefs[6]
+        factor2         = prefs[7]
+        factor3         = prefs[8]
+        factor4         = prefs[9]
+        factor5         = prefs[10]
+        factor6         = prefs[11]
 
 
-    recording = False if (len(row) == 0 or time_end is not None) else True
+
+    recording = False if (len(run) == 0 or time_end is not None) else True
 
     if recording == True:
 
@@ -599,7 +577,7 @@ def refresh_page(n, s1, s2):
                         ain3,
                         AVG(ain4) OVER (
                             ORDER BY
-                                TIME ROWS BETWEEN 10 PRECEDING
+                                TIME ROWS BETWEEN 30 PRECEDING
                                 AND 0 FOLLOWING
                         ) * {scan_frequency} / {max_requests} AS ain4,
                         s1,
@@ -614,31 +592,25 @@ def refresh_page(n, s1, s2):
                         1
                         """)
 
-        row = c.fetchone()
+        readings = c.fetchone()
 
         try:
 
             avgs = dict([
-                ('AIN0',row[2]),
-                ('AIN1',row[3]),
-                ('AIN2',row[4]),
-                ('AIN3',row[5]),
-                ('AIN4',row[6]),
-                ('s1',row[7]),
-                ('s2',row[8])
+                ('AIN0',readings[2]),
+                ('AIN1',readings[3]),
+                ('AIN2',readings[4]),
+                ('AIN3',readings[5]),
+                ('AIN4',readings[6]),
+                ('s1',readings[7]),
+                ('s2',readings[8])
                 ])
 
         except:
-            print('* SELECT failed *')
-
-
-
+            print('* SELECT FROM dac_readings FAILED *')
     else:
 
-        try:
-            avgs = lj.labjack(scan_frequency, max_requests, s1/factor5, s2/factor6) # Null handled exception here means it is biting it's tail
-        except:
-            print('Failed to connect with LabJack')
+        avgs = lj.labjack(scan_frequency, max_requests, s1/factor5, s2/factor6) # Null handled exception here means it is biting it's tail
 
 
         avgs.update({
@@ -654,9 +626,12 @@ def refresh_page(n, s1, s2):
     now = datetime.now()
     clock = now.strftime("%H:%M:%S")
 
-    #print(avgs['AIN4'])
-    return [avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],avgs['AIN4'],clock,avgs['s1'],avgs['s2']]               # Outputs the data to apps
-
+    # Returns data to the instruments
+    try:
+        return [avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],avgs['AIN4'],clock,avgs['s1'],avgs['s2']]   
+    except:
+        print('returning dummies ******')
+        return [0,0,0,0,0,clock,avgs['s1'],avgs['s2']]
 
 
 #--- UPDATE SLIDERPOS TABLE EVERY TIME SLIDER MOVES ------------------------------------------------------
@@ -667,11 +642,9 @@ def refresh_page(n, s1, s2):
     )
     
 def update_sliderpos(s1,s2):
-
     conn = sql.connect("labjackdb.db")
     c = conn.cursor()
-
     with conn:
-        c.execute(f"""UPDATE sliderpos SET s1 == {s1},s2 == {s2} """)
+        c.execute(f"UPDATE sliderpos SET s1 == {s1},s2 == {s2} ")
 
 #--------------------------------------------------------------------------------------------
