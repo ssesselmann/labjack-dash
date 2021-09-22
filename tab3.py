@@ -15,6 +15,8 @@ import lj as lj
 import math
 import numpy as np
 
+time.sleep(0.5)
+
 #---------------- Page Layout ------------------------------------------------------
 
 def tab3():

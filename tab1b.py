@@ -14,8 +14,6 @@ import sqlite3 as sql
 from datetime import datetime
 import lj as lj
 
-time.sleep(0.5)
-
 #+++ START PAGE RENDERING +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 def tab1():
@@ -63,24 +61,14 @@ def tab1():
     q3 = 3 * factor6
     q4 = 4 * factor6
     q5 = 5 * factor6
-
-    with conn:
-        c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
-        run = c.fetchone()
-        time_end = run[2]
-
-        if time_end == None:
-            state = True
-        else: state = False    
     
-
 
     tab1 = html.Div([   # Page refresh
         dcc.Interval(
             id='interval_gauges',
             interval= interval, 
             n_intervals=0,
-            disabled=False 
+            disabled=False
             ),
 
         html.Div([
@@ -121,8 +109,8 @@ def tab1():
                 },
 
                 children=[ 
-                    daq.BooleanSwitch(id='start', on = state, style={'backgroundColor':'black', 'width':'100px'}),
-                    html.Div(id='output_status',style={'color':'red', 'height':'15px'}), 
+                    html.Button('Record', id='start', n_clicks=0, style={'backgroundColor':'lightgreen', 'width':'100px'}),
+                    html.Div(id='output_status',style={'color':'white', 'height':'15px'}), 
                     html.Div(id='output_lastid',style={'color':'white', 'height':'15px'}), 
                         ]
                 ),
@@ -243,6 +231,7 @@ def tab1():
         
         html.Div([    
             
+
         html.Div([ html.P(id='clock')],
             style={
                 'fontSize':20,
@@ -410,22 +399,13 @@ def tab1():
 
 #--- END OF PAGE RENDERING --------------------------------------------------------------------------
 
+#+++ This callback only sets the recording status ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 @app.callback(
     Output('output_status', 'children'),
-    Output('ain0','value'), 
-    Output('ain1','value'),
-    Output('ain2','value'),
-    Output('ain3','value'),
-    Output('ain4','value'),
-    Output('clock', 'children'),
-    Output('s1_output', 'children'),
-    Output('s2_output', 'children'),
-    Input('interval_gauges','n_intervals'),
-    [State('start', 'on'), State('s1', 'value'), State('s2','value')]
-    )
+    Input('start', 'n_clicks'))
 
-def record_status_text(on, n, s1, s2):
+def record_status_text(n1):
 
     conn = sql.connect("labjackdb.db")
     c = conn.cursor()
@@ -436,13 +416,142 @@ def record_status_text(on, n, s1, s2):
         lastid      = run[0]
         time_end    = run[2]
 
-    status = 'RECORDING: '+str(lastid) if (n == True) else 'NOT RECORDING'
+    status = 'RECORDING' if ((n1 != 0) and (len(run) == 0 or time_end is not None)) else 'NOT RECORDING'
+    return str(status)
+
+# ------------Starts and Stops recording--------------------------------------    
+
+@app.callback(
+    Output('output_lastid', 'children'),
+    Input('start', 'n_clicks'),
+    [State('s1', 'value'), State('s2','value')])
+
+def start_stop_record(n,s1,s2):
+    if n == 0:
+        return 
+
+    conn = sql.connect("labjackdb.db")
+    c = conn.cursor()
+
+    with conn: 
+        c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
+        run = c.fetchone()
+        lastid = run[0]
+        time_end = run[2]
+
+    status = 'NOT RECORDING' if (len(run) == 0 or time_end is not None) else 'RECORDING'
+
+    if n > 0 and status == 'NOT RECORDING': #There is no active recording and so starting a new one
+        
+        with conn:
+            c.execute("SELECT * FROM preferences ")
+            prefs = c.fetchall()[0]
+
+            heading         = prefs[1]
+            max_requests    = prefs[2]
+            scan_frequency  = prefs[3]
+            interval        = prefs[4]
+            factor0         = prefs[5]
+            factor1         = prefs[6]
+            factor2         = prefs[7]
+            factor3         = prefs[8]
+            factor4         = prefs[9]
+            factor5         = prefs[10]
+            factor6         = prefs[11]
+            
+
+        now = int(datetime.now().strftime('%s%f'))
+
+        with conn:  # Inserts all fields except time_end
+            c.execute(f"INSERT INTO run_number (time_start) VALUES ({now}) ")
+
+
+#---- ENDLESS LOOP ------------------------------------------------------------------------
+      
+        while True:
+
+            with conn: 
+                c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
+                run = c.fetchone()
+                lastid      = run[0]
+                time_end    = run[2]
+
+            closed = True if time_end is not None else False
+
+            if closed == True:
+                break
+
+            with conn:
+                c.execute("SELECT * FROM sliderpos WHERE id = 1")
+                sliderpos = c.fetchall()[0]   
+                s1 = sliderpos[1]
+                s2 = sliderpos[2] 
+
+            avgs = lj.labjack(scan_frequency, max_requests, s1, s2)
+
+            avgs.update({
+                'AIN0':(avgs.get('AIN0') * factor0),
+                'AIN1':(avgs.get('AIN1') * factor1),
+                'AIN2':(avgs.get('AIN2') * factor2),
+                'AIN3':(10**(avgs['AIN3']-6.125)*10000000),
+                'AIN4':(avgs.get('AIN210')), # net counts
+                's1':(s1),
+                's2':(s2)
+            })
+
+            rec.record_avgs(lastid,avgs)   # Writes  data to disk
+
+#--- ENDLESS LOOP STOP ---------------------------------------------------------------------------    
+
+    else:   #   There is an open detected and so closing the opened run
+        
+        with conn: 
+            c.execute(f"UPDATE run_number SET time_end = {str(int(datetime.now().strftime('%s%f')))} WHERE run_id = {str(run[0])} ")
+        
+        with conn:
+            c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
+            run = c.fetchone()
+            lastid = run[0]
+
+        print(f"Run_id : '{lastid}' has been closed")        
+
+    return f"(Last recording '{lastid}')"
+
+#+++ END OF RECORD LOGIC - START INTERVAL PAGE REFRESH CALLBACK +++++++++++++++++++++++++++++++++++++++++++++
+    
+@app.callback(
+    Output('ain0','value'), 
+    Output('ain1','value'),
+    Output('ain2','value'),
+    Output('ain3','value'),
+    Output('ain4','value'),
+    Output('clock', 'children'),
+    Output('s1_output', 'children'),
+    Output('s2_output', 'children'),
+    Input('interval_gauges','n_intervals'),
+    [State('s1', 'value'), State('s2','value')]
+    )
+
+def refresh_page(n, s1, s2):
+
+    avgs = None
+    conn = sql.connect("labjackdb.db")
+    c = conn.cursor()
+
+
+    with conn:
+        c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
+        run = c.fetchall()[0]
+        lastid      = run[0]
+        time_start  = run[1]
+        time_end    = run[2]
 
     with conn:
         c.execute("SELECT * FROM preferences")
         prefs = c.fetchone()
         max_requests    = prefs[2]
         scan_frequency  = prefs[3]
+        interval        = prefs[4]
         factor0         = prefs[5]
         factor1         = prefs[6]
         factor2         = prefs[7]
@@ -451,39 +560,78 @@ def record_status_text(on, n, s1, s2):
         factor5         = prefs[10]
         factor6         = prefs[11]
 
-    avgs = lj.labjack(scan_frequency,max_requests,s1,s2)
-    avgs.update({
-        'AIN0':(avgs.get('AIN0') * factor0),
-        'AIN1':(avgs.get('AIN1') * factor1),
-        'AIN2':(avgs.get('AIN2') * factor2),
-        'AIN3':(10**(avgs['AIN3']-6.125)*10000000),
-        'AIN4':(avgs.get('AIN210')), # net counts
-        's1':(s1),
-        's2':(s2)
-        })
 
-    if n == True and time_end != None:
-        now = int(datetime.now().strftime('%s%f'))
-        with conn:  
-            c.execute(f"INSERT INTO run_number (time_start) VALUES ({now}) ")
-    
-    if n == True: 
-        rec.record_avgs(lastid,avgs)  
-    
-    if n == False and time_end == None: 
-        now = int(datetime.now().strftime('%s%f'))
-        with conn:  
-            c.execute(f"UPDATE run_number SET time_end = '{now}' WHERE run_id = '{lastid}' ")
+
+    recording = False if (len(run) == 0 or time_end is not None) else True
+
+    if recording == True:
+
         with conn:
-            c.execute("SELECT * from run_number ORDER BY run_id DESC LIMIT 1")
-            run = c.fetchone()
-            time_end = run[2]
+            c.execute(f"""
+                    SELECT
+                        run_id,     
+                        TIME,
+                        ain0,
+                        ain1,
+                        ain2,
+                        ain3,
+                        AVG(ain4) OVER (
+                            ORDER BY
+                                TIME ROWS BETWEEN 30 PRECEDING
+                                AND 0 FOLLOWING
+                        ) * {scan_frequency} / {max_requests} AS ain4,
+                        s1,
+                        s2
+                    FROM
+                        dac_readings
+                    WHERE
+                        run_id = '{lastid}'
+                    ORDER BY
+                        TIME DESC
+                    LIMIT
+                        1
+                        """)
+
+        readings = c.fetchone()
+
+        try:
+
+            avgs = dict([
+                ('AIN0',readings[2]),
+                ('AIN1',readings[3]),
+                ('AIN2',readings[4]),
+                ('AIN3',readings[5]),
+                ('AIN4',readings[6]),
+                ('s1',readings[7]),
+                ('s2',readings[8])
+                ])
+
+        except:
+            print('* SELECT FROM dac_readings FAILED *')
+    else:
+
+        avgs = lj.labjack(scan_frequency, max_requests, s1/factor5, s2/factor6) # Null handled exception here means it is biting it's tail
+
+
+        avgs.update({
+            'AIN0':(avgs.get('AIN0') * factor0),
+            'AIN1':(avgs.get('AIN1') * factor1),
+            'AIN2':(avgs.get('AIN2') * factor2),
+            'AIN3':(10**(avgs['AIN3']-6.125)*10000000),
+            'AIN4':(avgs.get('AIN210')), # net counts
+            's1':(avgs.get('s1') * factor5),
+            's2':(avgs.get('s2') * factor6)
+            }) 
 
     now = datetime.now()
     clock = now.strftime("%H:%M:%S")
-      
 
-    return [str(status),avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],avgs['AIN4'],clock,avgs['s1'],avgs['s2']]  
+    # Returns data to the instruments
+    try:
+        return [avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],avgs['AIN4'],clock,avgs['s1'],avgs['s2']]   
+    except:
+        print('returning dummies ******')
+        return [0,0,0,0,0,clock,avgs['s1'],avgs['s2']]
 
 
 #--- UPDATE SLIDERPOS TABLE EVERY TIME SLIDER MOVES ------------------------------------------------------
