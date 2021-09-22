@@ -23,17 +23,19 @@ def tab3():
     c = conn.cursor()
 
     with conn:
-        c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
+        c.execute("SELECT * FROM preferences")
 
-        row = c.fetchall()
+        prefs = c.fetchone()
 
-        interval = row[0][6]
-        name0   = row[0][14]
-        name1   = row[0][15]
-        name2   = row[0][16]
-        name3   = row[0][17]
-        name4   = row[0][18]
-        name5   = row[0][19]
+        interval = prefs[4]
+
+        name0    = prefs[12]
+        name1    = prefs[13]
+        name2    = prefs[14]
+        name3    = prefs[15]
+        name4    = prefs[16]
+        name5    = prefs[17]
+        name6    = prefs[18]
 
     tab3 = html.Div([ dcc.Dropdown(
         id='dropdown',
@@ -90,34 +92,40 @@ def interval(n,value):
     # Get position of sliders
     with conn:
         c.execute("SELECT * FROM sliderpos WHERE id = 1")
-    row = c.fetchone()
-    s1 = row[1]
-    s2 = row[2]
+    sliderpos = c.fetchone()
+    s1 = sliderpos[1]
+    s2 = sliderpos[2]
 
     # Get all run information
     with conn:
         c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
-    row = c.fetchall()[0]
+        run = c.fetchall()[0]
+        lastid          = run[0]
+        time_start      = run[1]
+    
+    with conn:
+        c.execute("SELECT * FROM preferences")
+        prefs = c.fetchone()
+        heading         = prefs[1]
+        max_requests    = prefs[2]
+        scan_frequency  = prefs[3]
+        interval        = prefs[4]
 
-    lastid          = row[0]
-    time_start      = row[1]
-    max_requests    = row[4]
-    scan_frequency  = row[5]
-    interval        = row[6]
-    factor0         = row[7]
-    factor1         = row[8]
-    factor2         = row[9]
-    factor3         = row[10]
-    factor4         = row[11]
-    factor5         = row[12]
-    factor6         = row[13]
-    name0           = row[14]
-    name1           = row[15]
-    name2           = row[16]
-    name3           = row[17]
-    name4           = row[18]
-    name5           = row[19]
-
+        factor0         = prefs[5]
+        factor1         = prefs[6]
+        factor2         = prefs[7]
+        factor3         = prefs[8]
+        factor4         = prefs[9]
+        factor5         = prefs[10]
+        factor6         = prefs[11]
+        
+        name0           = prefs[12]
+        name1           = prefs[13]
+        name2           = prefs[14]
+        name3           = prefs[15]
+        name4           = prefs[16]
+        name5           = prefs[17]
+        name6           = prefs[18]
 
     # Pull down selection options
     if value    == 'AIN0':
@@ -179,12 +187,12 @@ def interval(n,value):
         
             with conn:
                 c.execute("SELECT * FROM dac_readings WHERE run_id = '{}' ORDER BY time DESC LIMIT 300 ".format(lastid))
-            row = c.fetchall()
+            readings = c.fetchall()
 
 
             data_dict = {'x':[],'y':[]}
 
-            for d in row:
+            for d in readings:
                 data_dict['x'].append((d[1]-time_start)/1000000) # Calculate run time
                 data_dict['y'].append(d[i] )
 
@@ -201,7 +209,7 @@ def interval(n,value):
                         ain4, 
                         avg(ain4) 
                     OVER
-                        (ORDER BY time ROWS BETWEEN 10 PRECEDING AND 0 FOLLOWING )
+                        (ORDER BY time ROWS BETWEEN 30 PRECEDING AND 0 FOLLOWING )
                     AS ma
                     FROM 
                         dac_readings WHERE run_id = '{lastid}' 
@@ -209,43 +217,14 @@ def interval(n,value):
                     LIMIT 300
                     """
                     )
-                    #.format(lastid))
-
-                # print(
-                #     f""" 
-                #     SELECT time, ain4, avg(ain4) 
-                #     OVER
-                #     (ORDER BY time BETWEEN time >='{(int(datetime.now().strftime('%s%f'))-1000000)}' AND time <= '{int(datetime.now().strftime('%s%f'))} ')
-                #     AS ain4mov
-                #     FROM dac_readings WHERE run_id = '{lastid}' ORDER BY time DESC LIMIT 300
-                #     """)
-
-                #   """ 
-                    # SELECT
-                    #     sec,
-                    #     cps,
-                    #     AVG(cps) OVER (ORDER BY sec ROWS BETWEEN 10 PRECEDING AND 0 FOLLOWING ) AS mavg
-                    # FROM
-                    #     (SELECT ( ROUND( time/1000000, 0)+ 1 ) * 1000000 AS sec,
-                    #             SUM(ain4) AS cps
-                    #         FROM
-                    #             dac_readings
-                    #         WHERE
-                    #             run_id = '{}'
-                    #         GROUP BY
-                    #             sec
-                    #     ) AS td
-                    # ORDER BY sec DESC
-                    # LIMIT 60
-
-                        # """
+   
             
-            row = c.fetchall()
+            readings = c.fetchall()
 
 
             data_dict = {'x':[],'y':[]}
 
-            for d in row:
+            for d in readings:
                 data_dict['x'].append((d[0]-time_start)/1000000) # Calculate run time
                 data_dict['y'].append(d[2] * scan_frequency / max_requests)
 
