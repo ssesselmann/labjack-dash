@@ -63,22 +63,22 @@ def exportcsv(n,value,path):
         with conn:
             c.execute("SELECT * FROM run_number WHERE run_id = {} ".format(str(value)))
 
-            row = c.fetchall()[0]
+            run = c.fetchall()[0]
 
-            runid   = row[0]
-            name0   = row[14]
-            name1   = row[15]
-            name2   = row[16]
-            name3   = row[17]
-            name4   = row[18]
-            name5   = row[19]
-            name6   = row[20]
+            runid   = run[0]
+            name0   = run[14]
+            name1   = run[15]
+            name2   = run[16]
+            name3   = run[17]
+            name4   = run[18]
+            name5   = run[19]
+            name6   = run[20]
             time = 'time'
 
         with conn:
             c.execute("SELECT * FROM dac_readings WHERE run_id = {} ORDER BY time ".format(str(value)))
 
-        row = c.fetchall()
+        readings = c.fetchall()
 
         with open(str(path), 'w') as fd:
 
@@ -86,9 +86,9 @@ def exportcsv(n,value,path):
                 
             fd.write(header)
 
-        for i in range(len(row)):
+        for i in range(len(readings)):
 
-            string = ','.join(str(j) for j in [(row[i][0]),(row[i][1]),(row[i][2]),(row[i][3]),(row[i][4]),(row[i][5]),(row[i][6])]) +'\n'
+            string = ','.join(str(j) for j in [(readings[i][0]),(readings[i][1]),(readings[i][2]),(readings[i][3]),(readings[i][4]),(readings[i][5]),(readings[i][6])]) +'\n'
 
             with open(str(path),'a') as fd:
                 fd.write(string)
