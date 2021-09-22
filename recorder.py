@@ -5,16 +5,6 @@ import time
 import sqlite3 as sql
 import lj as lj
 
-# conn = sql.connect("labjackdb.db")
-# c = conn.cursor()
-
-# with conn:
-#         c.execute("SELECT * from run_number ORDER BY run_id DESC LIMIT 1")
-
-# row = c.fetchall()
-# time_end = row[0][2]
-
-
 #---SQLite Pre recording setup----------------------------------------------------------------------------
 
 def pre_record():
@@ -25,11 +15,11 @@ def pre_record():
     with conn:
         c.execute("""
         CREATE TABLE IF NOT EXISTS preferences (
-            id         INTEGER PRIMARY KEY AUTOINCREMENT,
-            heading         TEXT    DEFAULT 'My LabJack U3 Project',
-            max_requests    INTEGER DEFAULT 100,
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,               
+            heading         TEXT    DEFAULT 'My LabJack U3 Project',    
+            max_requests    INTEGER DEFAULT 1000,                        
             scan_frequency  INTEGER DEFAULT 8000,
-            interval        INTEGER DEFAULT 200,
+            interval        INTEGER DEFAULT 500,
             factor0         INTEGER DEFAULT 1,
             factor1         INTEGER DEFAULT 1,
             factor2         INTEGER DEFAULT 1,
@@ -51,25 +41,7 @@ def pre_record():
         CREATE TABLE IF NOT EXISTS run_number (
             run_id          INTEGER PRIMARY KEY AUTOINCREMENT,
             time_start      INTEGER NOT NULL,
-            time_end        INTEGER ,
-            heading         TEXT    DEFAULT 'My LabJack U3 Project',
-            max_requests    INTEGER DEFAULT 100,
-            scan_frequency  INTEGER DEFAULT 8000,
-            interval        INTEGER DEFAULT 200,
-            factor0         INTEGER DEFAULT 1,
-            factor1         INTEGER DEFAULT 1,
-            factor2         INTEGER DEFAULT 1,
-            factor3         INTEGER DEFAULT 1,
-            factor4         INTEGER DEFAULT 1,
-            factor5         INTEGER DEFAULT 1,
-            factor6         INTEGER DEFAULT 1,
-            name0         TEXT DEFAULT 'AIN0',
-            name1         TEXT DEFAULT 'AIN1',
-            name2         TEXT DEFAULT 'AIN2',
-            name3         TEXT DEFAULT 'AIN3',
-            name4         TEXT DEFAULT 'AIN4',
-            name5         TEXT DEFAULT 'DAC0',
-            name6         TEXT DEFAULT 'DAC1');
+            time_end        INTEGER);
             """)
         
 
@@ -94,24 +66,24 @@ def pre_record():
                 s1      REAL,
                 s2      REAL);
                 """)
-#-------------------------------------Checks if table sliderpos is empty and inserts a blank row
+#-------------------------------------Checks if table sliderpos is empty and inserts a blank record
     with conn:   
         c.execute("SELECT * FROM sliderpos") 
     if len(c.fetchall()) == 0:
         with conn:
             c.execute("INSERT INTO sliderpos (s1, s2) VALUES (0,0)")
-        print('TABLE sliderpos created')        
+            print('TABLE sliderpos created')        
 
-#-------------------------------------Checks if table run_number is empty and inserts a blank row
+#-------------------------------------Checks if table run_number is empty and inserts a blank record
 
     with conn:   
-        c.execute("SELECT * FROM run_number") #Check if there are more than one row
+        c.execute("SELECT * FROM run_number") #Check if there are more than one record
     if len(c.fetchall()) == 0:
         with conn:
-            c.execute("INSERT INTO run_number (time_start, time_end) VALUES (0,0)")  #Inserting the first row
-        print('TABLE run_number created')        
+            c.execute("INSERT INTO run_number (time_start, time_end) VALUES (0,0)")  #Inserting the first record
+            print('TABLE run_number created')        
 
-#-------------------------------------Checks if table preferences is empty and inserts a blank row
+#-------------------------------------Checks if table preferences is empty and inserts a blank record
 
     with conn:   
         c.execute("SELECT * FROM preferences") 
@@ -127,9 +99,9 @@ def pre_record():
 
     with conn: 
         c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
-    row = c.fetchall()[0]
-    lastid = row[0]
-    time_end = row[2]
+    run = c.fetchall()[0]
+    lastid = run[0]
+    time_end = run[2]
 
     if time_end == None:
         with conn:
