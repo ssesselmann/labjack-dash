@@ -108,6 +108,6 @@ def labjack(scan_frequency, max_requests, s1,s2):
 
 
 
-# while True:
-#     avgs=labjack(8000,8000,0,0)
-#     print(avgs)    
+while True:
+    avgs=labjack(8000,1000,0,0)
+    print(avgs)    
