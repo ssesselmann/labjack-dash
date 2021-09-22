@@ -18,28 +18,28 @@ def tab4():
     c = conn.cursor()
     with conn:
         c.execute("SELECT * FROM preferences")
-        row = c.fetchall()[0]
+        prefs = c.fetchall()[0]
             
-        heading         = row[1]
-        max_requests    = row[2]
-        scan_frequency  = row[3]
-        interval        = row[4]
+        heading         = prefs[1]
+        max_requests    = prefs[2]
+        scan_frequency  = prefs[3]
+        interval        = prefs[4]
 
-        factor0         = row[5]
-        factor1         = row[6]
-        factor2         = row[7]
-        factor3         = row[8]
-        factor4         = row[9]
-        factor5         = row[10]
-        factor6         = row[11]
+        factor0         = prefs[5]
+        factor1         = prefs[6]
+        factor2         = prefs[7]
+        factor3         = prefs[8]
+        factor4         = prefs[9]
+        factor5         = prefs[10]
+        factor6         = prefs[11]
         
-        name0           = row[12]
-        name1           = row[13]
-        name2           = row[14]
-        name3           = row[15]
-        name4           = row[16]
-        name5           = row[17]
-        name6           = row[18]
+        name0           = prefs[12]
+        name1           = prefs[13]
+        name2           = prefs[14]
+        name3           = prefs[15]
+        name4           = prefs[16]
+        name5           = prefs[17]
+        name6           = prefs[18]
 
     tab4 = html.Div([ #main page
 
