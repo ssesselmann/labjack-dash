@@ -17,7 +17,7 @@ def pre_record():
         CREATE TABLE IF NOT EXISTS preferences (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,               
             heading         TEXT    DEFAULT 'My LabJack U3 Project',    
-            max_requests    INTEGER DEFAULT 1000,                        
+            max_requests    INTEGER DEFAULT 4000,                        
             scan_frequency  INTEGER DEFAULT 8000,
             interval        INTEGER DEFAULT 500,
             factor0         INTEGER DEFAULT 1,
