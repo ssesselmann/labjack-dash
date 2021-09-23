@@ -13,11 +13,11 @@ from server import app
 import base64
 
 
+
+
 def tab5():
 
-    app = dash.Dash()
-    image_filename = 'assets/banner.png'
-    encoded_image = base64.b64encode(open(image_filename, 'rb').read())
+    
 
     tab5 = html.Div([
 
@@ -25,7 +25,7 @@ def tab5():
         
         html.P(children="""
             Ater a long struggle with a big brand name DAC on Windows, 
-            and decided to go with Linux and write my own code (as one does).""",
+            I decided to go with Linux and write my own code (as one does).""",
             style={'textAlign':'left', 'marginLeft':'100px', 'marginRight': '100px'}),
 
         html.P(children="""    
@@ -41,8 +41,8 @@ def tab5():
         html.H2(children="Acknowledgements", 
             style={'textAlign':'center', 'marginLeft':'100px', 'marginRight': '100px'}),
         html.P(children="""
-            First of all a big thanks to LabJack for making a low cost high quality DAC and
-            thanks to my two sons Erik and Tom for patiently coaching me with the Python code.
+            A big thanks to LabJack for making a low cost high quality DAC and
+            thanks also to my two sons Erik and Tom for patiently coaching me with the Python code.
             """, 
             style={'textAlign':'left', 'marginLeft':'100px', 'marginRight': '100px'}),
         html.P(children="Steven Sesselmann", 
@@ -52,12 +52,16 @@ def tab5():
         html.P(children="https://www.gammaspectacular.com", 
             style={'textAlign':'left', 'marginLeft':'100px', 'marginRight': '100px'}),
 
-        html.Div([html.Img(src='data:banner/png;base64,{}'.format(encoded_image))], style={'textAlign':'center'}),
+        html.P(html.Img(src=app.get_asset_url('banner.jpg'),),
+            style={'textAlign':'center'})
+        
 
         ]),
 
-    if __name__ == '__main__':
-        app.run_server(debug=True)
-
-
     return tab5
+
+
+
+
+
+    
