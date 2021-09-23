@@ -33,7 +33,8 @@ def pre_record():
             name3         TEXT DEFAULT 'AIN3',
             name4         TEXT DEFAULT 'AIN4',
             name5         TEXT DEFAULT 'DAC0',
-            name6         TEXT DEFAULT 'DAC1');
+            name6         TEXT DEFAULT 'DAC1',
+            xpoints       TEXT DEFAULT 100 );
             """)
 
     with conn:

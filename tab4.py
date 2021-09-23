@@ -40,20 +40,21 @@ def tab4():
         name4           = prefs[16]
         name5           = prefs[17]
         name6           = prefs[18]
+        xpoints         = prefs[19]
 
     tab4 = html.Div([ #main page
 
-        html.Div(  # Heading
-            'LabJack U3 Setup  & Calibration Last Run: ',
-            style={
-                'width':'100%', 
-                'height':40, 
-                'marginTop':0,
-                'textAlign':'center',
-                'fontSize':30,
-                'color':'black', 
-                'backgroundColor':'lightgray',}
-                ),
+            html.Div(  # Heading
+                'LabJack U3 Setup  & Calibration Last Run: ',
+                style={
+                    'width':'100%', 
+                    'height':40, 
+                    'marginTop':0,
+                    'textAlign':'center',
+                    'fontSize':30,
+                    'color':'black', 
+                    'backgroundColor':'lightgray',}
+                    ),
 
             html.Div([html.P(['My project title: ',
                 
@@ -62,24 +63,6 @@ def tab4():
                     type="text",
                     value= heading, 
                     placeholder="my title",)],
-                    style={
-                        'width':'100%', 
-                        'marginTop': 0,
-                        'padding': 5,
-                        'height':20, 
-                        'textAlign':'center',
-                        'fontSize':16,
-                        'color':'black',}
-                        )]),
-
-            
-            html.Div([html.P(['Number of requests to average (max 100): ',
-                dcc.Input( # Max requests
-                    id="max_requests", 
-                    type="number",
-                    value= max_requests,
-                    debounce=True, 
-                    placeholder="max_requests",)],
                     style={
                         'width':'100%', 
                         'marginTop': 0,
@@ -123,6 +106,23 @@ def tab4():
                         'fontSize':16,
                         'color':'black', }
                         )]),
+
+            html.Div([html.P(['Number of data points on charts (x axis): ',
+                dcc.Input(
+                    id="xpoints", 
+                    type="number",
+                    value = xpoints,
+                    debounce=True, 
+                    placeholder="xpoints",)],
+                    style={
+                        'width':'100%', 
+                        'marginTop': 0,
+                        'padding': 5,
+                        'height':20, 
+                        'textAlign':'center',
+                        'fontSize':16,
+                        'color':'black', }
+                        )]),
             
             html.Div(['Channel Calibration Factors'],
             style={
@@ -133,8 +133,7 @@ def tab4():
                 'textAlign':'center',
                 'fontSize':30,
                 'color':'black', 
-                'backgroundColor':'lightgray',
-                
+                'backgroundColor':'lightgray', 
                 }),    
 
             html.Div([html.P(['Factor 0: ',
@@ -375,11 +374,9 @@ def tab4():
                         'color':'black'}
                         )]),
 
-
-
-
-            html.Div([html.P(id='my_heading_output')],style={'visibility': 'hidden'}),
-            html.Div([html.P(id='max_requests_output')],style={'visibility': 'hidden'}),
+            html.Div([html.P(id='max_requests_output')],style={'visibility': 'hidden'}), 
+            html.Div([html.P(id='max_requests_output2')],style={'visibility': 'hidden'}), 
+            html.Div([html.P(id='my_heading_output')],style={'visibility': 'hidden'}),  
             html.Div([html.P(id='scan_frequency_output')],style={'visibility': 'hidden'}),
             html.Div([html.P(id='interval_output')],style={'visibility': 'hidden'}),
             html.Div([html.P(id='factor0_output')],style={'visibility': 'hidden'}),
@@ -397,8 +394,7 @@ def tab4():
             html.Div([html.P(id='name4_output')],style={'visibility': 'hidden'}),
             html.Div([html.P(id='name5_output')],style={'visibility': 'hidden'}),
             html.Div([html.P(id='name6_output')],style={'visibility': 'hidden'}),
-
-
+            html.Div([html.P(id='xpoints_output')],style={'visibility': 'hidden'}),
             ])
          
     return tab4
@@ -418,20 +414,9 @@ def heading(value):
 
 #----------------------------------------------------------------------------------------------------------
 
-@app.callback( # MAX_REQUESTS
-    Output(component_id='max_requests_output', component_property='children'),
-    Input(component_id='max_requests', component_property='value'))
-
-def heading(value):
-    conn = sql.connect("labjackdb.db")
-    c = conn.cursor()
-    with conn:
-        c.execute("UPDATE preferences SET max_requests = {} WHERE id = 1 " .format(str(value)))   
-    return 'Output: {}'.format(value)
-#----------------------------------------------------------------------------------------------------------
-
 @app.callback( # SCAN_FREQUENCY
     Output(component_id='scan_frequency_output', component_property='children'),
+    Output(component_id='max_requests_output', component_property='children'),
     Input(component_id='scan_frequency', component_property='value'))
 
 def heading(value):
@@ -439,20 +424,44 @@ def heading(value):
     c = conn.cursor()
     with conn:
         c.execute("UPDATE preferences SET scan_frequency = {} WHERE id = 1 " .format(str(value)))   
-    return 'Output: {}'.format(value)
+
+    with conn: 
+        c.execute("SELECT * FROM preferences ")
+        prefs = c.fetchone()
+        scan_frequency  = prefs[3]
+        interval        = prefs[4]
+        max_requests = scan_frequency/(1000/interval)
+
+    with conn:
+        c.execute("UPDATE preferences SET max_requests = {} WHERE id = 1 ".format(max_requests))
+
+    return ['Output: {}'.format(value), 'Number of data requests averaged: {}'.format(max_requests)]
 
 #----------------------------------------------------------------------------------------------------------
 
 @app.callback( # INTERVAL
     Output(component_id='interval_output', component_property='children'),
+    Output(component_id='max_requests_output2', component_property='children'),
     Input(component_id='interval', component_property='value'))
 
 def heading(value):
     conn = sql.connect("labjackdb.db")
     c = conn.cursor()
+   
     with conn:
-        c.execute("UPDATE preferences SET interval = {} WHERE id = 1 " .format(str(value)))   
-    return 'Output: {}'.format(value)
+        c.execute("UPDATE preferences SET interval = {} WHERE id = 1 " .format(str(value))) 
+    
+    with conn: 
+        c.execute("SELECT * FROM preferences ")
+        prefs = c.fetchone()
+        scan_frequency  = prefs[3]
+        interval        = prefs[4]
+        max_requests = scan_frequency/(1000/interval)
+
+    with conn:
+        c.execute("UPDATE preferences SET max_requests = {} WHERE id = 1 ".format(max_requests))
+
+    return ['Output: {}'.format(value), 'Number of data requests averaged: {}'.format(max_requests)]
 #----------------------------------------------------------------------------------------------------------
 
 @app.callback( # FACTOR0
@@ -543,7 +552,6 @@ def heading(value):
         c.execute("UPDATE preferences SET factor6 = {} WHERE id = 1 " .format(str(value)))   
     return 'Output: {}'.format(value) 
 
-
 #----------------------------------------------------------------------------------------------------------
 
 @app.callback( # NAME0
@@ -557,7 +565,6 @@ def heading(value):
         c.execute("UPDATE preferences SET name0 = '{}' WHERE id = 1 " .format(value))  
      
     return 'Output: {}'.format(value)     
-
 
 #----------------------------------------------------------------------------------------------------------
 
@@ -641,4 +648,27 @@ def heading(value):
     with conn:
         c.execute("UPDATE preferences SET name6 = '{}' WHERE id = 1 " .format(value))  
    
-    return 'Output: {}'.format(value)                            
+    return 'Output: {}'.format(value)      
+
+#----------------------------------------------------------------------------------------------------------
+
+@app.callback( # XPOINTS
+    Output(component_id='xpoints_output', component_property='children'),
+    Input(component_id='xpoints', component_property='value'))
+
+def heading(value):
+    conn = sql.connect("labjackdb.db")
+    c = conn.cursor()
+    with conn:
+        c.execute("UPDATE preferences SET xpoints = '{}' WHERE id = 1 " .format(value))  
+   
+    return 'Output: {}'.format(value)      
+
+
+
+
+
+
+
+
+

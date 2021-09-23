@@ -5,7 +5,6 @@ from dash import html
 #import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from server import app
-
 from tab1 import tab1
 from tab2 import tab2
 from tab3 import tab3
@@ -25,10 +24,10 @@ app.layout = html.Div([
             label='Controls', 
             value='tab1'),
         dcc.Tab(
-            label='Data Download', 
+            label='Charts', 
             value='tab2'),   
         dcc.Tab(
-            label='Charts', 
+            label='Data Download', 
             value='tab3'),              
         dcc.Tab(
             label='Calibration', 

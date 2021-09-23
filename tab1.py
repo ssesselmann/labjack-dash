@@ -457,7 +457,7 @@ def record_status_text(on, n, s1, s2):
         'AIN1':(avgs.get('AIN1') * factor1),
         'AIN2':(avgs.get('AIN2') * factor2),
         'AIN3':(10**(avgs['AIN3']-6.125)*10000000),
-        'AIN4':(avgs.get('AIN210')), # net counts
+        'AIN4':(avgs.get('AIN210')*(scan_frequency/max_requests)), # net counts
         's1':(s1),
         's2':(s2)
         })
@@ -482,9 +482,7 @@ def record_status_text(on, n, s1, s2):
     now = datetime.now()
     clock = now.strftime("%H:%M:%S")
       
-
     return [str(status),avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],avgs['AIN4'],clock,avgs['s1'],avgs['s2']]  
-
 
 #--- UPDATE SLIDERPOS TABLE EVERY TIME SLIDER MOVES ------------------------------------------------------
 

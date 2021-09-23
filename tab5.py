@@ -49,18 +49,15 @@ def tab5():
             style={'textAlign':'left', 'marginLeft':'100px', 'marginRight': '100px'}),
         html.P(children="steven@gammaspectacular.com", 
             style={'textAlign':'left', 'marginLeft':'100px', 'marginRight': '100px'}),
+        html.P(children="https://www.gammaspectacular.com", 
+            style={'textAlign':'left', 'marginLeft':'100px', 'marginRight': '100px'}),
 
-
-
-
-        html.Div([dcc.Link('gammaspectacular.com', href='https://gammaspectacular.com',)], style={'textAlign':'center'}),
-
-
-        # html.Img(src='data:image/png;base64,{}'.format(encoded_image)) ], style={'textAlign':'center'}),
-
-        
+        html.Div([html.Img(src='data:banner/png;base64,{}'.format(encoded_image))], style={'textAlign':'center'}),
 
         ]),
+
+    if __name__ == '__main__':
+        app.run_server(debug=True)
 
 
     return tab5

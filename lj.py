@@ -85,7 +85,6 @@ def labjack(scan_frequency, max_requests, s1,s2):
                 print("No data ; %s" % datetimd.now())
                 
     except:
-        print("Exception")
         d.streamStop()
         d.close()
         
