@@ -47,22 +47,41 @@ def tab1():
     name5           = prefs[17]
     name6           = prefs[18]
 
+    max0            = prefs[20]
+    max1            = prefs[21]
+    max2            = prefs[22]
+    max3            = prefs[23]
+    max4            = prefs[24]
+    max5            = prefs[25]
+    max6            = prefs[26]
+
     s1 = 0
     s2 = 0
 
-    p0 = 0 * factor5 
-    p1 = 1 * factor5
-    p2 = 2 * factor5
-    p3 = 3 * factor5
-    p4 = 4 * factor5
-    p5 = 5 * factor5
+    p0  = max5/10*0
+    p1  = max5/10*1
+    p2  = max5/10*2
+    p3  = max5/10*3
+    p4  = max5/10*4
+    p5  = max5/10*5
+    p6  = max5/10*6
+    p7  = max5/10*7
+    p8  = max5/10*8
+    p9  = max5/10*9
+    p10 = max5/10*10
 
-    q0 = 0 * factor6
-    q1 = 1 * factor6
-    q2 = 2 * factor6
-    q3 = 3 * factor6
-    q4 = 4 * factor6
-    q5 = 5 * factor6
+
+    q0 = max6/10*0
+    q1 = max6/10*1
+    q2 = max6/10*2
+    q3 = max6/10*3
+    q4 = max6/10*4
+    q5 = max6/10*5
+    q6 = max6/10*6
+    q7 = max6/10*7
+    q8 = max6/10*8
+    q9 = max6/10*9
+    q10 =max6/10*10
 
     with conn:
         c.execute("SELECT * FROM run_number ORDER BY run_id DESC LIMIT 1")
@@ -73,7 +92,12 @@ def tab1():
             state = True
         else: state = False    
     
+    with conn:
+        c.execute("SELECT * FROM sliderpos")
+        sliderpos = c.fetchone()
 
+        pos1 = sliderpos[1]
+        pos2 = sliderpos[2]
 
     tab1 = html.Div([   # Page refresh
         dcc.Interval(
@@ -121,16 +145,17 @@ def tab1():
                 },
 
                 children=[ 
-                    daq.BooleanSwitch(id='start', on = state, style={'backgroundColor':'black', 'width':'100px'}),
-                    html.Div(id='output_status',style={'color':'red', 'height':'15px'}), 
-                    html.Div(id='output_lastid',style={'color':'white', 'height':'15px'}), 
+                    daq.BooleanSwitch(id='start', on = state, style={'backgroundColor':'black','width':'100px'}),
+                    html.Div(id='output_status',style={'color':'red', 'height':'15px', 'textAlign':'left', 'padding':'5px'}), 
+                    html.Div(id='output_lastid',style={'color':'white', 'height':'15px', 'textAlign':'left', 'padding':'5px'}), 
                         ]
                 ),
 
         html.Div(
             style={
                 'width':'80%',
-                'color':'yellow', 
+                'textAlign':'center',
+                'color':'orange', 
                 'backgroundColor':'black',
                 'height':'50px',
                 'float':'left'
@@ -142,7 +167,7 @@ def tab1():
                 'height':'40px',
                 'width':'20%', 
                 'textAlign':'center',
-                'color':'yellow', 
+                'color':'orange', 
                 'backgroundColor':'black',
                 'float':'left'
                 }),
@@ -160,17 +185,22 @@ def tab1():
                 children= [dcc.Slider(
                 id='s1',
                 min=0,
-                max= 5 * factor5,
-                value=0,
+                max= max5,
+                value=pos1,
                 step=0.1,
                 updatemode='drag',
                 marks={
-                    p0:str("{:.1f}".format(p0)),
-                    p1:str("{:.1f}".format(p1)),
-                    p2:str("{:.1f}".format(p2)),
-                    p3:str("{:.1f}".format(p3)),
-                    p4:str("{:.1f}".format(p4)),
-                    p5:str("{:.1f}".format(p5)),
+                    int(p0):'{}'.format(int(p0)),
+                    int(p1):'{}'.format(int(p1)),
+                    int(p2):'{}'.format(int(p2)),
+                    int(p3):'{}'.format(int(p3)),
+                    int(p4):'{}'.format(str(p4)),
+                    int(p5):'{}'.format(str(p5)),
+                    int(p6):'{}'.format(str(p6)),
+                    int(p7):'{}'.format(str(p7)),
+                    int(p8):'{}'.format(str(p8)),
+                    int(p9):'{}'.format(str(p9)),
+                    int(p10):'{}'.format(str(p10)),
                     },),
 
                 html.Div([ html.Div(id='s1_output'),(name5)], 
@@ -187,17 +217,8 @@ def tab1():
                 'backgroundColor':'black', 
                 'float':'right',
                 'height':'50px'
-                },
-
-                # children=[daq.BooleanSwitch(
-                # id='switch', 
-                # on=False,
-                # color="#74FF33",),
-
-                # html.Div(
-                #     id='kill-switch-output'
-                #     )]
-            ),
+                }
+                ),
 
         html.Div(
             style={ 
@@ -223,19 +244,23 @@ def tab1():
                 children= [dcc.Slider(
                     id='s2',
                     min=0,
-                    max= 5 * factor6,
+                    max= max6,
                     step=0.1,
-                    value=0,
+                    value=pos2,
                     updatemode='drag',
                     marks={
-                        q0:str("{:.1f}".format(q0)),
-                        q1:str("{:.1f}".format(q1)),
-                        q2:str("{:.1f}".format(q2)),
-                        q3:str("{:.1f}".format(q3)),
-                        q4:str("{:.1f}".format(q4)),
-                        q5:str("{:.1f}".format(q5)),
-                        },
-                ),
+                        int(q0):'{}'.format(int(q0)),
+                        int(q1):'{}'.format(int(q1)),
+                        int(q2):'{}'.format(int(q2)),
+                        int(q3):'{}'.format(int(q3)),
+                        int(q4):'{}'.format(str(q4)),
+                        int(q5):'{}'.format(str(q5)),
+                        int(q6):'{}'.format(str(q6)),
+                        int(q7):'{}'.format(str(q7)),
+                        int(q8):'{}'.format(str(q8)),
+                        int(q9):'{}'.format(str(q9)),
+                        int(q10):'{}'.format(str(q10)),
+                        },),
         
                 html.Div([ html.Div(id='s2_output'),(name6)], 
                 style={ 'marginTop': 10, 'color':'white',  'textAlign':'center', 'fontSize':'16px'}),   
@@ -267,7 +292,7 @@ def tab1():
                 units= name0,
                 value= 0,
                 label= name0,
-                max=5*factor0,
+                max= max0,
                 min=0,
             ),
         
@@ -294,7 +319,7 @@ def tab1():
                 units= name1,
                 value= 0,
                 label= name1,
-                max=5*factor1,
+                max= max1,
                 min=0,
             ),
 
@@ -316,12 +341,12 @@ def tab1():
             daq.Gauge(
                 id='ain2',
                 size=200,
-                color='yellow',
+                color='orange',
                 showCurrentValue=True,
                 units= name2,
                 value= 0,
                 label= name2,
-                max=5*factor2,
+                max= max2,
                 min=0,
             ),
 
@@ -344,12 +369,12 @@ def tab1():
                 id='ain3',
                 size=200,
                 color='blue',
-                logarithmic=True,
+                logarithmic=False,
                 showCurrentValue=True,
                 units= name3,
-                value=10,
+                value=0,
                 label= name3,
-                max=5*factor3,
+                max= max3,
                 min=0,
                
             )],
@@ -371,11 +396,12 @@ def tab1():
                 id='ain4',
                 size=200,
                 color='purple',
+                logarithmic=True,
                 showCurrentValue=True,
                 units= name4,
                 value=0,
                 label= name4,
-                max=5*factor4,
+                max= max4,
                 min=0,
                
             )],
@@ -451,13 +477,28 @@ def record_status_text(on, n, s1, s2):
         factor5         = prefs[10]
         factor6         = prefs[11]
 
-    avgs = lj.labjack(scan_frequency,max_requests,s1,s2)
+        max0            = prefs[20]
+        max1            = prefs[21]
+        max2            = prefs[22]
+        max3            = prefs[23]
+        max4            = prefs[24]
+        max5            = prefs[25]
+        max6            = prefs[26]
+
+
+    avgs = lj.labjack(scan_frequency,max_requests,(factor5 * s1/max5),(factor6 * s2/max6))
+
+
+
     avgs.update({
-        'AIN0':(avgs.get('AIN0') * factor0),
-        'AIN1':(avgs.get('AIN1') * factor1),
-        'AIN2':(avgs.get('AIN2') * factor2),
-        'AIN3':(10**(avgs['AIN3']-6.125)*10000000),
-        'AIN4':(avgs.get('AIN210')*(scan_frequency/max_requests)), # net counts
+        'AIN0':(avgs.get('AIN0') / factor0 * max0),
+        'AIN1':(avgs.get('AIN1') / factor1 * max1),
+        'AIN2':(avgs.get('AIN2') / factor2 * max2),
+       #'AIN3':(avgs.get('AIN3') / factor3 * max3),
+        'AIN3':(10**(avgs['AIN3']-6.125) * 1000),   # Edwards APGX-H Vacuum Gauge
+
+        'AIN4':(avgs.get('AIN210')*(scan_frequency/(1000/max_requests))), # net counts
+
         's1':(s1),
         's2':(s2)
         })
@@ -492,6 +533,7 @@ def record_status_text(on, n, s1, s2):
     )
     
 def update_sliderpos(s1,s2):
+
     conn = sql.connect("labjackdb.db")
     c = conn.cursor()
     with conn:

@@ -124,7 +124,8 @@ def interval(n,value):
         name4           = prefs[16]
         name5           = prefs[17]
         name6           = prefs[18]
-        xpoints  = prefs[19]
+        
+        xpoints         = prefs[19]
 
     # Pull down selection options
     if value    == 'AIN0':

@@ -12,7 +12,7 @@ rec.pre_record()
 
 if __name__ == '__main__':  
     app.run_server(
-        host = '192.168.20.3',
-        port=8080,
+        # host = '192.168.20.3',
+        # port=8080,
         debug=False)
        
