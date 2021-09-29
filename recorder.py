@@ -3,7 +3,7 @@ import traceback
 from datetime import datetime
 import time
 import sqlite3 as sql
-import lj as lj
+#import lj as lj
 
 #---SQLite Pre recording setup----------------------------------------------------------------------------
 
@@ -56,8 +56,8 @@ def pre_record():
     with conn:
         c.execute("""
         CREATE TABLE IF NOT EXISTS dac_readings (
-            run_id  INTEGER,
-            time    INTEGER,
+            run_id  INTEGER PRIMARY KEY,
+            time    INTEGER PRIMARY KEY,
             ain0    REAL,
             ain1    REAL,
             ain2    REAL,
@@ -69,10 +69,25 @@ def pre_record():
 
     with conn:
         c.execute("""
+        CREATE TABLE IF NOT EXISTS temp_readings (
+            run_id  INTEGER,
+            time    INTEGER PRIMARY KEY,
+            ain0    REAL,
+            ain1    REAL,
+            ain2    REAL,
+            ain3    REAL,
+            ain4    REAL,
+            s1      REAL,
+            s2      REAL);
+            """)    
+
+    with conn:
+        c.execute("""
             CREATE TABLE IF NOT EXISTS sliderpos (
                 id  INTEGER PRIMARY KEY AUTOINCREMENT,
-                s1      REAL,
-                s2      REAL);
+                s1      REAL DEFAULT 0,
+                s2      REAL DEFAULT 0,
+                last_chart   TEXT DEFAULT 'AIN0' );
                 """)
 #-------------------------------------Checks if table sliderpos is empty and inserts a blank record
     with conn:   
@@ -116,34 +131,3 @@ def pre_record():
             c.execute(f"UPDATE run_number SET time_end = {int(datetime.now().strftime('%s%f'))} WHERE run_id = {lastid}")
         pass
     return 
-
-#=== Record function from tab 1 ===============================================
-
-def record_avgs(lastid, avgs):
-
-    #print(['recording avgs: ',lastid, avgs])
-
-
-    conn = sql.connect("labjackdb.db")
-    c = conn.cursor()
-
-    with conn:
-        c.execute("""
-        INSERT INTO dac_readings (run_id, time, ain0, ain1, ain2, ain3, ain4, s1, s2) 
-            VALUES (?,?,?,?,?,?,?,?,?)
-            """, 
-            (
-                lastid, 
-                int(datetime.now().strftime('%s%f')),
-                avgs.get('AIN0'),
-                avgs.get('AIN1'),
-                avgs.get('AIN2'),
-                avgs.get('AIN3'),
-                avgs.get('AIN210'),
-                avgs.get('s1'),
-                avgs.get('s2')
-                )
-            )    
-    return
-    
-#=== End function ===============================================
