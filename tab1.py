@@ -463,9 +463,9 @@ def record_status_text(on, n, s1, s2):
         lastid      = run[0]
         time_end    = run[2]
 
-    status = 'RECORDING: '+str(lastid) if (n == True) else 'NOT RECORDING'
+    status = 'RECORDING: '+str(lastid) if (on == True) else 'NOT RECORDING'
 
-    table = 'dac_readings' if (n == True) else 'temp_readings'
+    table = 'dac_readings' if (on == True) else 'temp_readings'
 
     with conn:
         c.execute("SELECT * FROM preferences")
@@ -497,8 +497,9 @@ def record_status_text(on, n, s1, s2):
         c.execute(f"SELECT (MAX(ain4) - MIN(ain4))/5 AS cps FROM {table_name} WHERE time > (SELECT MAX(time) FROM {table_name}) -5000000")
         cps = c.fetchone()[0]
 
-    avgs = {}
+    
 
+    avgs = {}
     avgs['AIN0'] = readings[0]
     avgs['AIN1'] = readings[1]
     avgs['AIN2'] = readings[2]
