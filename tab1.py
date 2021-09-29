@@ -1,20 +1,21 @@
 import dash
-#import dash_core_components as dcc
 from dash import dcc
 from dash import html
-#import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 from server import app
 import dash_daq as daq
+import utilities as ut
 import tkinter as tk
 import recorder as rec
 import time
 import sqlite3 as sql
 from datetime import datetime
-import lj as lj
+from itertools import islice
 
-time.sleep(0.5)
+
+
+avgs = []
 
 #+++ START PAGE RENDERING +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -396,7 +397,7 @@ def tab1():
                 id='ain4',
                 size=200,
                 color='purple',
-                logarithmic=True,
+                logarithmic=False,
                 showCurrentValue=True,
                 units= name4,
                 value=0,
@@ -464,6 +465,8 @@ def record_status_text(on, n, s1, s2):
 
     status = 'RECORDING: '+str(lastid) if (n == True) else 'NOT RECORDING'
 
+    table = 'dac_readings' if (n == True) else 'temp_readings'
+
     with conn:
         c.execute("SELECT * FROM preferences")
         prefs = c.fetchone()
@@ -485,10 +488,23 @@ def record_status_text(on, n, s1, s2):
         max5            = prefs[25]
         max6            = prefs[26]
 
+    state = ut.if_recording(c)
+    table_name = "dac_readings" if state == True else "temp_readings"    
 
-    avgs = lj.labjack(scan_frequency,max_requests,(factor5 * s1/max5),(factor6 * s2/max6))
+    with conn:
+        c.execute(f"SELECT ain0, ain1, ain2, ain3 FROM {table_name} ORDER BY time DESC LIMIT 1")
+        readings = c.fetchone()
+        c.execute(f"SELECT (MAX(ain4) - MIN(ain4))/5 AS cps FROM {table_name} WHERE time > (SELECT MAX(time) FROM {table_name}) -5000000")
+        cps = c.fetchone()[0]
 
+    avgs = {}
 
+    avgs['AIN0'] = readings[0]
+    avgs['AIN1'] = readings[1]
+    avgs['AIN2'] = readings[2]
+    avgs['AIN3'] = readings[3]
+  
+   
 
     avgs.update({
         'AIN0':(avgs.get('AIN0') / factor0 * max0),
@@ -496,20 +512,18 @@ def record_status_text(on, n, s1, s2):
         'AIN2':(avgs.get('AIN2') / factor2 * max2),
        #'AIN3':(avgs.get('AIN3') / factor3 * max3),
         'AIN3':(10**(avgs['AIN3']-6.125) * 1000),   # Edwards APGX-H Vacuum Gauge
-
-        'AIN4':(avgs.get('AIN210')*(scan_frequency/(1000/max_requests))), # net counts
-
+        'AIN4':(cps), # net counts
         's1':(s1),
         's2':(s2)
         })
 
+    #print(avgs)
+
     if n == True and time_end != None:
         now = int(datetime.now().strftime('%s%f'))
+
         with conn:  
-            c.execute(f"INSERT INTO run_number (time_start) VALUES ({now}) ")
-    
-    if n == True: 
-        rec.record_avgs(lastid,avgs)  
+            c.execute(f"INSERT INTO run_number (time_start) VALUES ({now}) ")  
     
     if n == False and time_end == None: 
         now = int(datetime.now().strftime('%s%f'))
@@ -523,7 +537,8 @@ def record_status_text(on, n, s1, s2):
     now = datetime.now()
     clock = now.strftime("%H:%M:%S")
       
-    return [str(status),avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],avgs['AIN4'],clock,avgs['s1'],avgs['s2']]  
+
+    return [status, avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],avgs['AIN4'],clock,avgs['s1'],avgs['s2']]
 
 #--- UPDATE SLIDERPOS TABLE EVERY TIME SLIDER MOVES ------------------------------------------------------
 
