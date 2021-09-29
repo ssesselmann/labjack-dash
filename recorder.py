@@ -56,7 +56,7 @@ def pre_record():
     with conn:
         c.execute("""
         CREATE TABLE IF NOT EXISTS dac_readings (
-            run_id  INTEGER PRIMARY KEY,
+            run_id  INTEGER,
             time    INTEGER PRIMARY KEY,
             ain0    REAL,
             ain1    REAL,
