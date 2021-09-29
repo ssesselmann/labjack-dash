@@ -38,7 +38,10 @@ def labjack():
                 )          
 
     time_stamp = datetime.now()
-    d.streamStop()
+    try:
+        d.streamStop()
+    except:
+        print('error on streamStop')    
     while True:
         try:   
             d.streamStart()
@@ -50,12 +53,28 @@ def labjack():
                     ain1 = (sum(r['AIN1'])/len(r['AIN1']))
                     ain2 = (sum(r['AIN2'])/len(r['AIN2']))
                     ain3 = (sum(r['AIN3'])/len(r['AIN3']))
-                    ain4 = (r['AIN210'][-1])
-                    ain5 = (r['AIN224'][-1])
 
-                    counts32 = ((ain4 << 16) + ain5)
+                    counts32 = ((r['AIN224'][-1] << 16) + r['AIN210'][-1])
 
                     if state != ut.if_recording(c):
+                        d.streamStop()
+                        d.configU3()
+                        d.getCalibrationData()
+                        d.configIO(
+                                    EnableCounter0 = True, 
+                                    FIOAnalog = 15,
+                                    TimerCounterPinOffset=4
+                                    )
+                        d.streamConfig( 
+                                    NumChannels = 6,  
+                                    InternalStreamClockFrequency = 0, 
+                                    Resolution = 3, 
+                                    ScanInterval = 1, 
+                                    PChannels = [0,1,2,3,210,224], 
+                                    NChannels = [31,31,32,31,31,31], 
+                                    ScanFrequency = 4000, 
+                                    )
+                        d.streamStart()
                         with conn:
                             c.execute("DELETE FROM temp_readings")
                             c.execute("SELECT run_id FROM run_number ORDER BY run_id DESC LIMIT 1")  
@@ -71,7 +90,7 @@ def labjack():
                         
                         c.execute(f"""
                             INSERT INTO  {table_name} (run_id, time, ain0, ain1, ain2, ain3, ain4, s1, s2) 
-                            VALUES ({'NULL' if state == False else str(lastid)},{str(time)},{str(ain0)}, {str(ain1)}, {str(ain2)}, {str(ain3)}, {str(ain4)}, {str(s1)},{str(s2)}) 
+                            VALUES ({'NULL' if state == False else str(lastid)},{str(time)},{str(ain0)}, {str(ain1)}, {str(ain2)}, {str(ain3)}, {str(counts32)}, {str(s1)},{str(s2)}) 
                             """)    
                     d.writeRegister(5000, s1) # Analogue out slider calibration
                     d.writeRegister(5002, s2) # Analogue out slider calibration
