@@ -1,8 +1,7 @@
 import dash
-#import dash_core_components as dcc
+import lj as lj
 from dash import dcc
 from dash import html
-#import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from server import app
 from tab1 import tab1
@@ -10,6 +9,7 @@ from tab2 import tab2
 from tab3 import tab3
 from tab4 import tab4
 from tab5 import tab5
+
 
 
 #---Defines the tab buttons------------------------------------------------------------
@@ -34,12 +34,18 @@ app.layout = html.Div([
             value='tab4'),
         dcc.Tab(
             label='Info', 
-            value='tab5'),      
-               
+            value='tab5'),          
         ]),
 
 
-    html.Div(id = 'tabs-content')
+    html.Div(id = 'tabs-content'),
+    dcc.Interval(
+            id='write_readings',
+            interval= 1000, 
+            n_intervals=0,
+            disabled=False 
+            ),
+    html.Div(id='wr')
     ])
 
 #---Tab values call function and provide page contents
@@ -63,4 +69,15 @@ def render_content(tab):
         return tab4()   
 
     elif tab == 'tab5':
-        return tab5()           
+        return tab5()   
+
+@app.callback(
+    Output('wr','children'),
+    Input('write_readings','n_intervals'))
+
+def start_labjack(n):
+    if n == 0:
+        lj.labjack()
+    
+
+
