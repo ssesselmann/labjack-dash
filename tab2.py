@@ -39,6 +39,11 @@ def tab2():
         name6    = prefs[18]
         xpoints  = prefs[19]
 
+    with conn:
+        c.execute("SELECT * FROM sliderpos")
+        spos = c.fetchone()
+        chart = spos[3]    
+
     tab3 = html.Div([ dcc.Dropdown(
         id='dropdown',
         options=[
@@ -49,7 +54,7 @@ def tab2():
             {'label': name4, 'value': 'AIN4'}
             ],style={'textAlign':'center'},
         
-        value='AIN0', #default value
+        value=chart, #default value
 
             ),
 
@@ -87,12 +92,18 @@ def interval(n,value):
 
     conn = sql.connect("labjackdb.db")
     c = conn.cursor()
+
+    # Set last chart viewed
+    with conn:
+        c.execute(f"UPDATE sliderpos SET last_chart == '{value}' ")
+
     # Get position of sliders
     with conn:
         c.execute("SELECT * FROM sliderpos WHERE id = 1")
     sliderpos = c.fetchone()
     s1 = sliderpos[1]
     s2 = sliderpos[2]
+    chart = sliderpos[3]
 
     # Get all run information
     with conn:
@@ -100,6 +111,7 @@ def interval(n,value):
         run = c.fetchall()[0]
         lastid          = run[0]
         time_start      = run[1]
+        time_end        = run[2]
     
     with conn:
         c.execute("SELECT * FROM preferences")
@@ -126,6 +138,14 @@ def interval(n,value):
         name6           = prefs[18]
         
         xpoints         = prefs[19]
+
+        max0            = prefs[20]
+        max1            = prefs[21]
+        max2            = prefs[22]
+        max3            = prefs[23]
+        max4            = prefs[24]
+        max5            = prefs[25]
+        max6            = prefs[26]
 
     # Pull down selection options
     if value    == 'AIN0':
@@ -173,15 +193,18 @@ def interval(n,value):
         avgs = lj.labjack(scan_frequency, max_requests, s1, s2)
 
         avgs.update({
-            'AIN0':(avgs.get('AIN0') * factor0),
-            'AIN1':(avgs.get('AIN1') * factor1),
-            'AIN2':(avgs.get('AIN2') * factor2),
-            'AIN3':(10**(avgs['AIN3']-6.125)*10000000),
-            'AIN4':(avgs.get('AIN4') )
+            'AIN0':(avgs.get('AIN0') / factor0 * max0),
+            'AIN1':(avgs.get('AIN1') / factor1 * max1),
+            'AIN2':(avgs.get('AIN2') / factor2 * max2),
+           #'AIN3':(avgs.get('AIN3') / factor3 * max3),
+            'AIN3':(10**(avgs['AIN3']-6.125) * 1000),   # Edwards APGX-H Vacuum Gauge
+            'AIN4':(avgs.get('AIN210')*(scan_frequency/(1000/max_requests))), # net counts
+            's1':(s1),
+            's2':(s2)
             })
 
-        #print(avgs)
-        rec.record_avgs(lastid,avgs)  # Writes the data to disk
+        if time_end == None:
+            rec.record_avgs(lastid,avgs)  # Writes the data to disk
 
         if value != 'AIN4':
         
@@ -207,7 +230,7 @@ def interval(n,value):
                     SELECT 
                         time, 
                         ain4, 
-                        avg(ain4) 
+                        sum(ain4) 
                     OVER
                         (ORDER BY time ROWS BETWEEN 30 PRECEDING AND 0 FOLLOWING )
                     AS ma
@@ -217,16 +240,18 @@ def interval(n,value):
                     LIMIT '{xpoints}'
                     """
                     )
-   
             
             readings = c.fetchall()
 
+
+            print(readings)
 
             data_dict = {'x':[],'y':[]}
 
             for d in readings:
                 data_dict['x'].append((d[0]-time_start)/1000000) # Calculate run time
-                data_dict['y'].append(d[2] * scan_frequency / max_requests)
+
+                data_dict['y'].append(d[2])
 
             x_data = data_dict.get('x')
             y_data = data_dict.get('y')
@@ -245,15 +270,15 @@ def interval(n,value):
 
         #Layout object defines the style of the graph features, eg axies titles etc
         layout = go.Layout(
-            margin=go.layout.Margin(
+                margin=go.layout.Margin(
                 l=50,r=30, b=30, t=30),
                 title = "",
-                height = 800,
-            showlegend=False,
-            xaxis = dict(
+                height = 600,
+                showlegend=False,
+                xaxis = dict(
                 title = 'time', 
                 visible = True),
-            yaxis=dict(
+                yaxis=dict(
                 title = name,   
                 visible = True, 
                 autorange = True,
