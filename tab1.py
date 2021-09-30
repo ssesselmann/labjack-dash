@@ -15,7 +15,7 @@ from itertools import islice
 
 
 
-avgs = []
+avgs = {}
 
 #+++ START PAGE RENDERING +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -467,28 +467,8 @@ def record_status_text(on, n, s1, s2):
 
     table = 'dac_readings' if (on == True) else 'temp_readings'
 
-    with conn:
-        c.execute("SELECT * FROM preferences")
-        prefs = c.fetchone()
-        max_requests    = prefs[2]
-        scan_frequency  = prefs[3]
-        factor0         = prefs[5]
-        factor1         = prefs[6]
-        factor2         = prefs[7]
-        factor3         = prefs[8]
-        factor4         = prefs[9]
-        factor5         = prefs[10]
-        factor6         = prefs[11]
-
-        max0            = prefs[20]
-        max1            = prefs[21]
-        max2            = prefs[22]
-        max3            = prefs[23]
-        max4            = prefs[24]
-        max5            = prefs[25]
-        max6            = prefs[26]
-
     state = ut.if_recording(c)
+
     table_name = "dac_readings" if state == True else "temp_readings"    
 
     with conn:
@@ -496,29 +476,12 @@ def record_status_text(on, n, s1, s2):
         readings = c.fetchone()
         c.execute(f"SELECT (MAX(ain4) - MIN(ain4))/5 AS cps FROM {table_name} WHERE time > (SELECT MAX(time) FROM {table_name}) -5000000")
         cps = c.fetchone()[0]
+       
+        avgs['AIN0'] = readings[0]
+        avgs['AIN1'] = readings[1]
+        avgs['AIN2'] = readings[2]
+        avgs['AIN3'] = readings[3]
 
-    
-
-    avgs = {}
-    avgs['AIN0'] = readings[0]
-    avgs['AIN1'] = readings[1]
-    avgs['AIN2'] = readings[2]
-    avgs['AIN3'] = readings[3]
-  
-   
-
-    avgs.update({
-        'AIN0':(avgs.get('AIN0') / factor0 * max0),
-        'AIN1':(avgs.get('AIN1') / factor1 * max1),
-        'AIN2':(avgs.get('AIN2') / factor2 * max2),
-       #'AIN3':(avgs.get('AIN3') / factor3 * max3),
-        'AIN3':(10**(avgs['AIN3']-6.125) * 1000),   # Edwards APGX-H Vacuum Gauge
-        'AIN4':(cps), # net counts
-        's1':(s1),
-        's2':(s2)
-        })
-
-    #print(avgs)
 
     if n == True and time_end != None:
         now = int(datetime.now().strftime('%s%f'))
@@ -539,7 +502,7 @@ def record_status_text(on, n, s1, s2):
     clock = now.strftime("%H:%M:%S")
       
 
-    return [status, avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],avgs['AIN4'],clock,avgs['s1'],avgs['s2']]
+    return [status, avgs['AIN0'],avgs['AIN1'],avgs['AIN2'],avgs['AIN3'],cps,clock,s1,s2]
 
 #--- UPDATE SLIDERPOS TABLE EVERY TIME SLIDER MOVES ------------------------------------------------------
 
