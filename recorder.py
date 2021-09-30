@@ -17,8 +17,8 @@ def pre_record():
         CREATE TABLE IF NOT EXISTS preferences (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,               
             heading         TEXT    DEFAULT 'My LabJack U3 Project',    
-            max_requests    INTEGER DEFAULT 4000,                        
-            scan_frequency  INTEGER DEFAULT 8000,
+            max_requests    INTEGER DEFAULT 1,                        
+            scan_frequency  INTEGER DEFAULT 4000,
             interval        INTEGER DEFAULT 500,
             factor0         REAL    DEFAULT 1,
             factor1         REAL    DEFAULT 1,
@@ -70,7 +70,7 @@ def pre_record():
     with conn:
         c.execute("""
         CREATE TABLE IF NOT EXISTS temp_readings (
-            run_id  INTEGER,
+            run_id  INTEGER DEFAULT 1,
             time    INTEGER PRIMARY KEY,
             ain0    REAL,
             ain1    REAL,
