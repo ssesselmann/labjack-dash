@@ -463,18 +463,25 @@ def record_status_text(on, n, s1, s2):
         lastid      = run[0]
         time_end    = run[2]
 
-    status = 'RECORDING: '+str(lastid) if (on == True) else 'NOT RECORDING'
+    #status = 'RECORDING: '+ str(lastid) if (on == True) else 'NOT RECORDING'
+
 
     table = 'dac_readings' if (on == True) else 'temp_readings'
 
     state = ut.if_recording(c)
-
     table_name = "dac_readings" if state == True else "temp_readings"    
+    status = 'RECORDING '+ str(lastid) if state == True else "NOT RECORDING"
 
     with conn:
         c.execute(f"SELECT ain0, ain1, ain2, ain3 FROM {table_name} ORDER BY time DESC LIMIT 1")
         readings = c.fetchone()
-        c.execute(f"SELECT (MAX(ain4) - MIN(ain4))/5 AS cps FROM {table_name} WHERE time > (SELECT MAX(time) FROM {table_name}) -5000000")
+
+        #c.execute(f"SELECT (MAX(ain4) - MIN(ain4))/5 AS cps FROM {table_name} WHERE time > (SELECT MAX(time) FROM {table_name}) -5000000")
+
+        c.execute(f"""
+            SELECT ((ain4 - LAG (ain4, 50) OVER (ORDER BY time)) / (time - LAG (time, 50) OVER (ORDER BY time))) * 1000000 AS cps 
+            FROM {table_name} ORDER BY TIME DESC LIMIT 1;""")
+        
         cps = c.fetchone()[0]
        
         avgs['AIN0'] = readings[0]
