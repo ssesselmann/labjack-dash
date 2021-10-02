@@ -13,13 +13,13 @@ import math
 import numpy as np
 import utilities as ut
 
-time_start = int(datetime.now().strftime('%s%f'))
+
 
 #---------------- Page Layout ------------------------------------------------------
 
 def tab2():
 
-    
+    time_start = int(datetime.now().strftime('%s%f'))
 
     conn = sql.connect("labjackdb.db")
     c = conn.cursor()
@@ -89,6 +89,7 @@ def tab2():
 def interval(n,value):
 
     i = None
+    data_dict = {'x':[],'y':[]}
 
     conn = sql.connect("labjackdb.db")
     c = conn.cursor()
@@ -162,7 +163,6 @@ def interval(n,value):
         ymax    = 6 * factor4
         name    = name4
         color   = 'purple'
-        counts  = 0  
         
 
     if i == None:
@@ -181,27 +181,33 @@ def interval(n,value):
             lastid = run[0]
             time_start = run[1]
 
-            c.execute(f"SELECT time, ain0, ain1, ain2, ain3, ain4 FROM {table_name} ORDER BY time DESC LIMIT 1200")
+
+
+        if (value <= 'AIN3'):
+            c.execute(f"SELECT time, ain0, ain1, ain2, ain3 FROM {table_name} ORDER BY time DESC LIMIT 1200")
             readings = c.fetchall()
-
-
-            data_dict = {'x':[],'y':[]}
 
             for d in readings:
                 data_dict['x'].append((d[0] - time_start)/1000000)
                 data_dict['y'].append(d[i])
 
-            # if value == 'AIN4':
-            #     data_dict = {'x':[],'y':[]}
-            #     c.execute(f"SELECT time, (MAX(ain4) - MIN(ain4))/5 AS cps FROM {table_name} WHERE time > (SELECT MAX(time) FROM {table_name}) -5000000")
-            #     readings = c.fetchone()    
-            #     data_dict['x'].append(readings[0])
-            #     data_dict['y'].append(readings[1])
+        if (value =='AIN4'):
+            if state == False:
+                lastid = 1
+            c.execute(f"""
+                    SELECT time, ((ain4 - LAG (ain4, 100) OVER (ORDER BY time)) / (time - LAG (time, 100) OVER (ORDER BY time)))*1000000 AS cps 
+                    FROM {table_name} WHERE run_id = {lastid} ORDER BY TIME DESC LIMIT 1200;""")
+            readings = c.fetchall()   
+
+            for d in readings:    
+                data_dict['x'].append((d[0]- time_start)/1000000)
+                data_dict['y'].append(d[1])
 
 
-            x_data = data_dict.get('x')
-            y_data = data_dict.get('y')
+        x_data = data_dict.get('x')
+        y_data = data_dict.get('y')
 
+        #print(x_data, y_data) #debug
 
         traces = []
         traces.append(
@@ -209,10 +215,10 @@ def interval(n,value):
                 x = x_data,
                 y = y_data,
                 name = name,
-                marker = dict(color = color,size = 3),
+                marker = dict(color = color, size = 3),
                 mode = 'lines+markers'
                 )
-        )
+            )
 
         #Layout object defines the style of the graph features, eg axies titles etc
         layout = go.Layout(
