@@ -48,7 +48,7 @@ def labjack():
                 ScanInterval = 1, 
                 PChannels = [0,1,2,3,210,224], 
                 NChannels = [31,31,32,31,31,31], 
-                ScanFrequency = 4000, 
+                ScanFrequency = scan_frequency, 
                 )          
 
     time_stamp = datetime.now()
@@ -82,7 +82,7 @@ def labjack():
                                     ScanInterval = 1, 
                                     PChannels = [0,1,2,3,210,224], 
                                     NChannels = [31,31,32,31,31,31], 
-                                    ScanFrequency = 4000, 
+                                    ScanFrequency = scan_frequency, 
                                     )
                         d.streamStart()
 
