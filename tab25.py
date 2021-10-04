@@ -183,20 +183,20 @@ def analysis(value):
 
     #Layout object defines the style of the graph features, eg axies titles etc
     layout = go.Layout(
-            margin=go.layout.Margin(l=100,r=150, b=30, t=30),
+            margin=go.layout.Margin(l=50,r=50, b=30, t=30),
             title="",
             height = 800,
-
+            autosize=True,
             showlegend=True,
             xaxis = dict(title = 'Seconds', visible = True),
 
-            yaxis = dict(title = name0, visible = True, autorange = True, color='red', anchor='free', overlaying='y', side='left', position=0.00),
+            yaxis = dict(title = name0, visible = True, autorange = True, color='red', anchor='free', overlaying='y', side='left', position=0.00, automargin=True),
             
-            yaxis1= dict(title = name1, visible = True, autorange = True, color='green', anchor="free", overlaying="y", side="left", position=0.02),
-            yaxis2= dict(title = name2, visible = True, autorange = True, color='orange', anchor="free", overlaying="y", side="right", position=0.025),
+            yaxis1= dict(title = name1, visible = True, autorange = True, color='green', anchor="free", overlaying="y", side="left", position=0.01, automargin=True),
+            yaxis2= dict(title = name2, visible = True, autorange = True, color='orange', anchor="free", overlaying="y", side="left", position=0.02, automargin=True),
             
-            yaxis3= dict(title = name3, visible = True, autorange = True, color='blue', anchor="free", overlaying="y", side="right", position=1.00),
-            yaxis4= dict(title = name4, visible = True, autorange = True, color='purple', anchor="free", overlaying="y", side="left", position=0.98)
+            yaxis3= dict(title = name3, visible = True, autorange = True, color='blue', anchor="free", overlaying="y", side="right", position=1.00, automargin=True),
+            yaxis4= dict(title = name4, visible = True, autorange = True, color='purple', anchor="free", overlaying="y", side="right", position=0.99, automargin=True)
             
         )  
 
