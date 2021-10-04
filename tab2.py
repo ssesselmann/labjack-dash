@@ -8,9 +8,6 @@ from server import app
 import sqlite3 as sql
 import plotly.graph_objs as go
 import sqlite3 as sql
-import lj as lj
-import math
-import numpy as np
 import utilities as ut
 
 
@@ -44,7 +41,7 @@ def tab2():
         spos = c.fetchone()
         chart = spos[3]    
 
-    tab3 = html.Div([ dcc.Dropdown(
+    tab2 = html.Div([ dcc.Dropdown(
         id='dropdown',
         options=[
             {'label': name0, 'value': 'AIN0'},
@@ -67,7 +64,7 @@ def tab2():
 
 
         html.Div([ 
-            dcc.Graph( id='fig' ),
+            dcc.Graph( id='graph' ),
             ],
             style = {'width':'100%',"border":"3px gray solid",'display':'inline-block'}
             )         
@@ -76,12 +73,12 @@ def tab2():
 
             )
     
-    return tab3
+    return tab2
 
 #---------------- END PAGE LAYOUT ------------------------------------------------------    
 
 @app.callback( 
-    Output('fig','figure'),
+    Output('graph','figure'),
     [Input('interval','n_intervals')],
     State('dropdown', 'value')
     )
