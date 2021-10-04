@@ -6,6 +6,8 @@ from dash.dependencies import Input, Output, State
 from server import app
 from tab1 import tab1
 from tab2 import tab2
+from tab25 import tab25
+from tab5 import tab5
 from tab3 import tab3
 from tab4 import tab4
 from tab5 import tab5
@@ -25,7 +27,10 @@ app.layout = html.Div([
             value='tab1'),
         dcc.Tab(
             label='Charts', 
-            value='tab2'),   
+            value='tab2'), 
+        dcc.Tab(
+            label='Post analysis', 
+            value='tab25'),       
         dcc.Tab(
             label='Data Download', 
             value='tab3'),              
@@ -61,6 +66,9 @@ def render_content(tab):
         
     elif tab == 'tab2':
         return tab2()
+
+    elif tab == 'tab25':
+        return tab25()    
 
     elif tab == 'tab3':
         return tab3() 
