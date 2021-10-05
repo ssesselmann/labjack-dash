@@ -482,12 +482,17 @@ def record_status_text(on, n, s1, s2):
             SELECT ((ain4 - LAG (ain4, 50) OVER (ORDER BY time)) / (time - LAG (time, 50) OVER (ORDER BY time))) * 1000000 AS cps 
             FROM {table_name} ORDER BY TIME DESC LIMIT 1;""")
         
+     
         cps = c.fetchone()[0]
-       
         avgs['AIN0'] = readings[0]
         avgs['AIN1'] = readings[1]
         avgs['AIN2'] = readings[2]
         avgs['AIN3'] = readings[3]
+      
+
+
+
+        
 
 
     if n == True and time_end != None:
