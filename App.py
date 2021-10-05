@@ -6,13 +6,10 @@ from dash.dependencies import Input, Output, State
 from server import app
 from tab1 import tab1
 from tab2 import tab2
-from tab25 import tab25
-from tab5 import tab5
 from tab3 import tab3
 from tab4 import tab4
 from tab5 import tab5
-
-
+from tab6 import tab6
 
 #---Defines the tab buttons------------------------------------------------------------
 
@@ -30,18 +27,17 @@ app.layout = html.Div([
             value='tab2'), 
         dcc.Tab(
             label='Post analysis', 
-            value='tab25'),       
+            value='tab3'),       
         dcc.Tab(
             label='Data Download', 
-            value='tab3'),              
+            value='tab4'),              
         dcc.Tab(
             label='Calibration', 
-            value='tab4'),
+            value='tab5'),
         dcc.Tab(
             label='Info', 
-            value='tab5'),          
+            value='tab6'),          
         ]),
-
 
     html.Div(id = 'tabs-content'),
     dcc.Interval(
@@ -67,17 +63,17 @@ def render_content(tab):
     elif tab == 'tab2':
         return tab2()
 
-    elif tab == 'tab25':
-        return tab25()    
-
     elif tab == 'tab3':
-        return tab3() 
+        return tab3()    
 
     elif tab == 'tab4':
-        return tab4()   
+        return tab4() 
 
     elif tab == 'tab5':
         return tab5()   
+
+    elif tab == 'tab6':
+        return tab6()   
 
 @app.callback(
     Output('wr','children'),
