@@ -88,7 +88,7 @@ def analysis(value):
         time_start = c.fetchone()[0] 
 
     with conn:
-        c.execute(f"SELECT run_id, ((time - {time_start} )) AS time, ain1, ain2, ain3, ain4 FROM dac_readings WHERE run_id = {str(value)} ORDER BY TIME DESC")
+        c.execute(f"SELECT run_id, (time - {time_start} ) AS time, ain1, ain2, ain3, ain4 FROM dac_readings WHERE run_id = {str(value)} ORDER BY TIME DESC")
 
         data = c.fetchall()
 
@@ -101,7 +101,17 @@ def analysis(value):
             ain1.append(data[i][3])
             ain2.append(data[i][4])
             ain3.append(data[i][4])
-            ain4.append(data[i][5])
+            
+
+    with conn:
+        c.execute(f"""
+            SELECT (time - {time_start}) AS time, ((ain4 - LAG (ain4, 100) OVER (ORDER BY time)) / (time - LAG (time, 100) OVER (ORDER BY time)))*1000000 AS cps 
+            FROM dac_readings WHERE run_id = {str(value)} ORDER BY TIME DESC;""")
+
+        counts = c.fetchall()
+        
+        for i in range(len(data)):
+            ain4.append(counts[i][1])
 
 
 
