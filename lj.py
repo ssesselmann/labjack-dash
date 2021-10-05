@@ -5,7 +5,7 @@ import time
 import u3
 import utilities as ut
 
-#-------------------------------------------
+#--------This module connects to the Labjack and records the data to SQLite-----------------------------------
 
 def labjack():
 
