@@ -5,7 +5,7 @@ import time
 import sqlite3 as sql
 #import lj as lj
 
-#---SQLite Pre recording setup----------------------------------------------------------------------------
+#---SQLite Pre recording function - Sets up a new database when run the first time-------
 
 def pre_record():
 
