@@ -6,14 +6,9 @@ import plotly.graph_objs as go
 from server import app
 import dash_daq as daq
 import utilities as ut
-import tkinter as tk
-import recorder as rec
 import time
 import sqlite3 as sql
 from datetime import datetime
-from itertools import islice
-
-
 
 avgs = {}
 
