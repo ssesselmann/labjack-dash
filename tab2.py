@@ -10,8 +10,6 @@ import plotly.graph_objs as go
 import sqlite3 as sql
 import utilities as ut
 
-
-
 #---------------- Page Layout ------------------------------------------------------
 
 def tab2():
