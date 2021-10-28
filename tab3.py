@@ -136,7 +136,7 @@ def analysis(value):
             x = time,
             y = ain1,
             name = name1,
-            yaxis='y1',
+            yaxis='y2',
             marker = dict(color = 'green', size = 3),
             mode = 'lines+markers'
             )
@@ -158,7 +158,7 @@ def analysis(value):
             x = time,
             y = ain3,
             name = name3,
-            yaxis='y3',
+            yaxis='y4',
             marker = dict(color = 'blue', size = 3),
             mode = 'lines+markers'
             )
@@ -169,7 +169,7 @@ def analysis(value):
             x = time,
             y = ain4,
             name = name4,
-            yaxis='y4',
+            yaxis='y5',
             marker = dict(color = 'purple', size = 3),
             mode = 'lines+markers'
             )
@@ -178,7 +178,7 @@ def analysis(value):
 
     #Layout object defines the style of the graph features, eg axies titles etc
     layout = go.Layout(
-            margin=go.layout.Margin(l=50,r=50, b=30, t=30),
+            margin=go.layout.Margin(l=100,r=100, b=30, t=30),
             title="",
             height = 800,
             autosize=True,
@@ -193,12 +193,12 @@ def analysis(value):
                 #range      = [0, max0], 
                 color       = 'red', 
                 anchor      = 'free', 
-                overlaying  = 'y', 
+                # overlaying  = 'y', 
                 side        = 'left', 
                 position    = 0.00, 
                 automargin  = True),
             
-            yaxis1= dict(
+            yaxis2= dict(
                 title       = name1, 
                 type        = 'linear',
                 visible     = True, 
@@ -206,12 +206,12 @@ def analysis(value):
                 autorange   = True,
                 color       = 'green', 
                 anchor      = 'free', 
-                overlaying  = 'y', 
+                # overlaying  = 'y', 
                 side        = 'left', 
                 position    = 0.01, 
                 automargin  = True),
 
-            yaxis2= dict(
+            yaxis3= dict(
                 title       = name2, 
                 type        = 'linear',
                 visible     = True, 
@@ -219,12 +219,12 @@ def analysis(value):
                 autorange   = True, 
                 color       = 'orange', 
                 anchor      = 'free', 
-                overlaying  = 'y', 
+                # overlaying  = 'y', 
                 side        = 'left', 
                 position    = 0.02, 
                 automargin  = True),
             
-            yaxis3= dict(
+            yaxis4= dict(
                 title       = name3,
                 type        = 'linear',
                 visible     = True, 
@@ -232,12 +232,12 @@ def analysis(value):
                 autorange   = True, 
                 color       = 'blue', 
                 anchor      = 'free', 
-                overlaying  = 'y', 
+                # overlaying  = 'y', 
                 side        = 'right', 
                 position    = 1.00, 
                 automargin  = True),
 
-            yaxis4= dict(
+            yaxis5= dict(
                 title       = name4, 
                 type        = 'linear',
                 visible     = True, 
@@ -245,7 +245,7 @@ def analysis(value):
                 autorange   = True, 
                 color       = 'purple', 
                 anchor      = 'free', 
-                overlaying  = 'y', 
+                # overlaying  = 'y', 
                 side        = 'right', 
                 position    = 0.99, 
                 automargin  = True)
