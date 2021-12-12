@@ -1,5 +1,8 @@
 from App import app
 import recorder as rec
+import webbrowser
+from threading import Timer
+
 
 
 # This function sets up the database first time it is run
@@ -10,9 +13,14 @@ import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-if __name__ == '__main__':  
-    app.run_server(
-        # host = '192.168.20.3',
-        # port=8080,
-        debug=False)
+port=8050
+
+def open_browser():
+    webbrowser.open_new("http://localhost:{}".format(port))
+
+if __name__ == '__main__':
+    Timer(1, open_browser).start();  
+    app.run_server(debug=False, port=port)
+            
+
        
