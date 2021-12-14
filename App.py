@@ -10,6 +10,8 @@ from tab3 import tab3
 from tab4 import tab4
 from tab5 import tab5
 from tab6 import tab6
+from tab7 import tab7
+
 
 #---Defines the tab buttons------------------------------------------------------------
 
@@ -36,7 +38,10 @@ app.layout = html.Div([
             value='tab5'),
         dcc.Tab(
             label='Info', 
-            value='tab6'),          
+            value='tab6'),   
+        dcc.Tab(
+            label='Exit', 
+            value='tab7'),        
         ]),
 
     html.Div(id = 'tabs-content'),
@@ -73,7 +78,11 @@ def render_content(tab):
         return tab5()   
 
     elif tab == 'tab6':
-        return tab6()   
+        return tab6()  
+    
+    elif tab == 'tab7':
+        return tab7() 
+            
 
 @app.callback(
     Output('wr','children'),
