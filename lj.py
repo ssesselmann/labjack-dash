@@ -137,7 +137,7 @@ def labjack():
         except Exception as e:
             d.streamStop()
             d.close()
-            print('error', e)
+            print('Exception in LJ, program ended', e)
             break
 
 #while True:
