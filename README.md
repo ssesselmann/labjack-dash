@@ -21,12 +21,17 @@ Feel free to download and use the code or make improvements in a separate branch
 Instructions
 ------------
 After installing the Labjack drivers, simply download all files
-in this folder, then open the file called run.py and edit the localhost IP address.
+in this folder, then run the file called run.py
 
 Either run the program from the command line or from Sublime text 
 by pressing [ctrl] + [b] to build.
 
 Then point your browser to the server IP address and port number in the run file.
+
+MAC OS
+------
+If you are using Mac Os there is a fully compiled version
+in the folder called labjack-dash/dist/run.app
 
 
 Acknowledgements
