@@ -4,7 +4,6 @@ import dash_daq as daq
 import sys
 from dash import dcc
 from dash import html
-import multiprocessing
 import time
 from dash.dependencies import Input, Output
 from server import app
