@@ -165,7 +165,6 @@ def interval(n,value):
         return {'data':[],'layout':[]}
     
     else:    
-
         state = ut.if_recording(c)
 
         table_name = "dac_readings" if state == True else "temp_readings"
@@ -176,10 +175,11 @@ def interval(n,value):
             lastid = run[0]
             time_start = run[1]
 
-
+        if state == False: 
+            lastid = 1
 
         if (value <= 'AIN3'):
-            c.execute(f"SELECT time, ain0, ain1, ain2, ain3 FROM {table_name} ORDER BY time DESC LIMIT 1200")
+            c.execute(f"SELECT time, ain0, ain1, ain2, ain3 FROM {table_name} WHERE run_id = {str(lastid)} ORDER BY time DESC LIMIT {xpoints}")
             readings = c.fetchall()
 
             for d in readings:
@@ -191,18 +191,15 @@ def interval(n,value):
                 lastid = 1
             c.execute(f"""
                     SELECT time, ((ain4 - LAG (ain4, 100) OVER (ORDER BY time)) / (time - LAG (time, 100) OVER (ORDER BY time)))*1000000 AS cps 
-                    FROM {table_name} WHERE run_id = {lastid} ORDER BY TIME DESC LIMIT 1200;""")
+                    FROM {table_name} WHERE run_id = {lastid} ORDER BY TIME DESC LIMIT {xpoints};""")
             readings = c.fetchall()   
 
             for d in readings:    
                 data_dict['x'].append((d[0]- time_start)/1000000)
                 data_dict['y'].append(d[1])
 
-
         x_data = data_dict.get('x')
         y_data = data_dict.get('y')
-
-        #print(x_data, y_data) #debug
 
         traces = []
         traces.append(
@@ -229,7 +226,6 @@ def interval(n,value):
             )  
 
         #The fig object is returned to place the placeholder graph.
-
         fig = {'data':traces,'layout':layout}
 
         
