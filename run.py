@@ -14,7 +14,7 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 
-port = 5000 # or simply open on the default `8050` port
+port = 8050 # or simply open on the default `8050` port
 
 def open_browser():
     webbrowser.open_new("http://localhost:{}".format(port))
